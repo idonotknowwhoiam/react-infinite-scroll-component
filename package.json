@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ankeetmaini/react-infinite-scroll-component.git"
+    "url": "git+https://github.com/idonotknowwhoiam/react-infinite-scroll-component.git"
   },
   "keywords": [
     "react",
@@ -34,10 +34,7 @@
   ],
   "author": "Ankeet Maini <ankeet.maini@gmail.com>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/ankeetmaini/react-infinite-scroll-component/issues"
-  },
-  "homepage": "https://github.com/ankeetmaini/react-infinite-scroll-component#readme",
+  "homepage": "https://github.com/idonotknowwhoiam/react-infinite-scroll-component#readme",
   "peerDependencies": {
     "react": ">=16.0.0"
   },
