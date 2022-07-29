@@ -35,6 +35,9 @@ export default class App extends React.Component {
           hasMore={true}
           loader={<h4>Loading...</h4>}
           pullDownToRefresh
+          pullDownToRefreshThresholdY={50}
+          pullDownToRefreshThresholdX={30}
+          pullDownSafeZone={15}
           pullDownToRefreshContent={
             <h3 style={{ textAlign: 'center' }}>
               &#8595; Pull down to refresh

@@ -18,7 +18,9 @@ export interface Props {
   pullDownToRefresh?: boolean;
   pullDownToRefreshContent?: ReactNode;
   releaseToRefreshContent?: ReactNode;
-  pullDownToRefreshThreshold?: number;
+  pullDownToRefreshThresholdY?: number;
+  pullDownToRefreshThresholdX?: number;
+  pullDownSafeZone?: number;
   refreshFunction?: Fn;
   onScroll?: (e: MouseEvent) => any;
   dataLength: number;
@@ -60,7 +62,9 @@ export default class InfiniteScroll extends Component<Props, State> {
 
   // variables to keep track of pull down behaviour
   private startY = 0;
+  private startX = 0;
   private currentY = 0;
+  private currentX = 0;
   private dragging = false;
 
   // will be populated in componentDidMount
@@ -179,6 +183,17 @@ export default class InfiniteScroll extends Component<Props, State> {
     return null;
   };
 
+  resetPulldownAnim = () => {
+    return requestAnimationFrame(() => {
+      // this._infScroll
+      if (this._infScroll) {
+        this._infScroll.style.overflow = 'auto';
+        this._infScroll.style.transform = 'none';
+        this._infScroll.style.willChange = 'unset';
+      }
+    });
+  };
+
   onStart: EventListener = (evt: Event) => {
     if (this.lastScrollTop) return;
 
@@ -186,14 +201,16 @@ export default class InfiniteScroll extends Component<Props, State> {
 
     if (evt instanceof MouseEvent) {
       this.startY = evt.pageY;
+      this.startX = evt.pageX;
     } else if (evt instanceof TouchEvent) {
       this.startY = evt.touches[0].pageY;
+      this.startX = evt.touches[0].pageX;
     }
     this.currentY = this.startY;
+    this.currentX = this.startX;
 
     if (this._infScroll) {
       this._infScroll.style.willChange = 'transform';
-      this._infScroll.style.transition = `transform 0.2s cubic-bezier(0,0,0.31,1)`;
     }
   };
 
@@ -202,35 +219,71 @@ export default class InfiniteScroll extends Component<Props, State> {
 
     if (evt instanceof MouseEvent) {
       this.currentY = evt.pageY;
+      this.currentX = evt.pageX;
     } else if (evt instanceof TouchEvent) {
       this.currentY = evt.touches[0].pageY;
+      this.currentX = evt.touches[0].pageX;
     }
 
     // user is scrolling down to up
     if (this.currentY < this.startY) return;
 
+    // user is dragging too much on X axis
+    if (
+      this.currentX - this.startX >
+        Number(this.props.pullDownToRefreshThresholdX) ||
+      this.currentX - this.startX <
+        -Number(this.props.pullDownToRefreshThresholdX)
+    ) {
+      this.dragging = false;
+      this.resetPulldownAnim();
+      return;
+    }
+
     if (
       this.currentY - this.startY >=
-      Number(this.props.pullDownToRefreshThreshold)
+      Number(this.props.pullDownToRefreshThresholdY)
     ) {
       this.setState({
         pullToRefreshThresholdBreached: true,
       });
     }
 
+    console.log(this.props.pullDownSafeZone);
+
     // so you can drag upto 1.5 times of the maxPullDownDistance
-    if (this.currentY - this.startY > this.maxPullDownDistance * 1.5) return;
+    if (Number(this.props.pullDownSafeZone)) {
+      if (
+        this.currentY - this.startY >
+        (this.maxPullDownDistance + Number(this.props.pullDownSafeZone)) * 1.5
+      )
+        return;
+    } else {
+      if (this.currentY - this.startY > this.maxPullDownDistance * 1.5) return;
+    }
 
     if (this._infScroll) {
-      this._infScroll.style.overflow = 'visible';
-      this._infScroll.style.transform = `translate3d(0px, ${this.currentY -
-        this.startY}px, 0px)`;
+      // safe zone on Y check
+      if (this.props.pullDownSafeZone) {
+        if (this.currentY - this.startY >= this.props.pullDownSafeZone) {
+          this._infScroll.style.overflow = 'visible';
+          this._infScroll.style.transform = `translate3d(0px, ${this.currentY -
+            this.startY -
+            this.props.pullDownSafeZone}px, 0px)`;
+        }
+      } else {
+        this._infScroll.style.overflow = 'visible';
+        this._infScroll.style.transform = `translate3d(0px, ${this.currentY -
+          this.startY}px, 0px)`;
+      }
     }
   };
 
   onEnd: EventListener = () => {
     this.startY = 0;
+    this.startX = 0;
     this.currentY = 0;
+    this.currentX = 0;
 
     this.dragging = false;
 
@@ -241,14 +294,7 @@ export default class InfiniteScroll extends Component<Props, State> {
       });
     }
 
-    requestAnimationFrame(() => {
-      // this._infScroll
-      if (this._infScroll) {
-        this._infScroll.style.overflow = 'auto';
-        this._infScroll.style.transform = 'none';
-        this._infScroll.style.willChange = 'unset';
-      }
-    });
+    this.resetPulldownAnim();
   };
 
   isElementAtTop(target: HTMLElement, scrollThreshold: string | number = 0.8) {
@@ -316,7 +362,7 @@ export default class InfiniteScroll extends Component<Props, State> {
     const atBottom = this.props.inverse
       ? this.isElementAtTop(target, this.props.scrollThreshold)
       : this.isElementAtBottom(target, this.props.scrollThreshold);
-
+    console.log('target', target);
     // call the `next` function in the props to trigger the next data fetch
     if (atBottom && this.props.hasMore) {
       this.actionTriggered = true;
@@ -347,6 +393,8 @@ export default class InfiniteScroll extends Component<Props, State> {
     const outerDivStyle =
       this.props.pullDownToRefresh && this.props.height
         ? { overflow: 'auto' }
+        : {} || this.props.pullDownToRefresh
+        ? { overflow: 'hidden' }
         : {};
     return (
       <div
