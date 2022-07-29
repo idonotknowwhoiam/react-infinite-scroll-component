@@ -189,7 +189,6 @@ export default class InfiniteScroll extends Component<Props, State> {
       if (this._infScroll) {
         this._infScroll.style.overflow = 'auto';
         this._infScroll.style.transform = 'none';
-        this._infScroll.style.willChange = 'unset';
       }
     });
   };
@@ -208,10 +207,6 @@ export default class InfiniteScroll extends Component<Props, State> {
     }
     this.currentY = this.startY;
     this.currentX = this.startX;
-
-    if (this._infScroll) {
-      this._infScroll.style.willChange = 'transform';
-    }
   };
 
   onMove: EventListener = (evt: Event) => {
@@ -248,8 +243,6 @@ export default class InfiniteScroll extends Component<Props, State> {
         pullToRefreshThresholdBreached: true,
       });
     }
-
-    console.log(this.props.pullDownSafeZone);
 
     // so you can drag upto 1.5 times of the maxPullDownDistance
     if (Number(this.props.pullDownSafeZone)) {
@@ -362,7 +355,6 @@ export default class InfiniteScroll extends Component<Props, State> {
     const atBottom = this.props.inverse
       ? this.isElementAtTop(target, this.props.scrollThreshold)
       : this.isElementAtBottom(target, this.props.scrollThreshold);
-    console.log('target', target);
     // call the `next` function in the props to trigger the next data fetch
     if (atBottom && this.props.hasMore) {
       this.actionTriggered = true;
