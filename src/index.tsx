@@ -282,6 +282,7 @@ export default class InfiniteScroll extends Component<Props, State> {
 
     if (this.state.pullToRefreshThresholdBreached) {
       this.props.refreshFunction && this.props.refreshFunction();
+      this.actionTriggered = false;
       this.setState({
         pullToRefreshThresholdBreached: false,
       });
@@ -348,6 +349,9 @@ export default class InfiniteScroll extends Component<Props, State> {
         ? document.documentElement
         : document.body;
 
+    this.lastScrollTop = target.scrollTop;
+
+    // --> componentDidUpdate --> если прорсы поменялись actionTriggered false
     // return immediately if the action has already been triggered,
     // prevents multiple triggers.
     if (this.actionTriggered) return;
@@ -361,8 +365,6 @@ export default class InfiniteScroll extends Component<Props, State> {
       this.setState({ showLoader: true });
       this.props.next && this.props.next();
     }
-
-    this.lastScrollTop = target.scrollTop;
   };
 
   render() {
