@@ -26,6 +26,8 @@ export interface Props {
   dataLength: number;
   initialScrollY?: number;
   className?: string;
+  outerDivClassName?: string;
+  outerDivStyle?: CSSProperties;
 }
 
 interface State {
@@ -386,14 +388,14 @@ export default class InfiniteScroll extends Component<Props, State> {
     // on drag down as overflow becomes visible
     const outerDivStyle =
       this.props.pullDownToRefresh && this.props.height
-        ? { overflow: 'auto' }
-        : {} || this.props.pullDownToRefresh
-        ? { overflow: 'hidden' }
-        : {};
+        ? { overflow: 'auto', ...this.props.outerDivStyle }
+        : { ...this.props.outerDivStyle };
+
     return (
       <div
         style={outerDivStyle}
-        className="infinite-scroll-component__outerdiv"
+        className={`infinite-scroll-component__outerdiv ${this.props
+          .outerDivClassName || ''}`}
       >
         <div
           className={`infinite-scroll-component ${this.props.className || ''}`}
